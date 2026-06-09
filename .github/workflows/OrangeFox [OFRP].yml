@@ -10,7 +10,7 @@ on:
       MANIFEST_BRANCH:
         description: 'MANIFEST_BRANCH'
         required: true
-        default: '9.0'
+        default: '11.0'
       DEVICE_TREE_URL:
         description: 'DEVICE_TREE_URL'
         required: true
@@ -99,7 +99,13 @@ jobs:
         cd ${{ steps.pwd.outputs.workspace-folder }}/fox_${{ github.event.inputs.MANIFEST_BRANCH }}
         git clone ${{ github.event.inputs.COMMON_TREE_URL }} -b ${{ github.event.inputs.DEVICE_TREE_BRANCH }} ./${{ github.event.inputs.COMMON_PATH }}
       working-directory: ${{ steps.pwd.outputs.workspace-folder }}
-
+      
+    - name: Clone vendor/orangefox
+      run: |
+        cd ${{ steps.pwd.outputs.workspace-folder }}/fox_${{ github.event.inputs.MANIFEST_BRANCH }}
+        mkdir -p vendor
+        git clone https://gitlab.com/OrangeFox/vendor/orangefox.git -b ${{ github.event.inputs.MANIFEST_BRANCH }} ./vendor/orangefox
+        
     - name: Set Swap Space
       uses: pierotofy/set-swap-space@master
       with:
