@@ -50,7 +50,6 @@ jobs:
       contents: write
     steps:
 
-    
     # You might want to Checkout your repo first, but not mandatory
     - name: Check Out
       uses: actions/checkout@v4
@@ -99,23 +98,31 @@ jobs:
         cd ${{ steps.pwd.outputs.workspace-folder }}/fox_${{ github.event.inputs.MANIFEST_BRANCH }}
         git clone ${{ github.event.inputs.COMMON_TREE_URL }} -b ${{ github.event.inputs.DEVICE_TREE_BRANCH }} ./${{ github.event.inputs.COMMON_PATH }}
       working-directory: ${{ steps.pwd.outputs.workspace-folder }}
-      
-    - name: Clone vendor/orangefox
-      run: |
-        cd ${{ steps.pwd.outputs.workspace-folder }}/fox_${{ github.event.inputs.MANIFEST_BRANCH }}
-        mkdir -p vendor
-        git clone https://gitlab.com/OrangeFox/vendor/orangefox.git -b ${{ github.event.inputs.MANIFEST_BRANCH }} ./vendor/orangefox
-        
+
     - name: Set Swap Space
       uses: pierotofy/set-swap-space@master
       with:
         swap-size-gb: 12
-        
+
     - name: Install Python 2
       run: |
         sudo apt-get update
         sudo apt-get install -y python2
         sudo ln -sf /usr/bin/python2 /usr/bin/python
+
+    - name: Fix OrangeFox vendor tree location
+      run: |
+        cd ${{ steps.pwd.outputs.workspace-folder }}/fox_${{ github.event.inputs.MANIFEST_BRANCH }}
+        # 检查是否有误放的 vendor 目录
+        if [ -d "recovery/orangefox" ]; then
+          mkdir -p vendor
+          mv recovery/orangefox vendor/
+        elif [ -d "recovery/vendor" ]; then
+          mkdir -p vendor
+          mv recovery/vendor/* vendor/
+        fi
+        # 验证文件是否存在
+        ls -l vendor/orangefox/config/common.mk
 
     - name: Building recovery
       run: |
